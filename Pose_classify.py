@@ -10,6 +10,7 @@ class Posture_Classify_Model(BehaviorModelExecutor):
         
         self.init_state("Wait")
         self.insert_state("Wait", Infinite)
+        self.insert_state("Stop", Infinite)
         self.insert_state("Generate",1)
         self.insert_state("Next",1)
         self.insert_input_port("start")
@@ -31,7 +32,7 @@ class Posture_Classify_Model(BehaviorModelExecutor):
             self._cur_state = "Generate"
 
         if port == "Done":
-            self._cur_state = "Generate"
+            self._cur_state = "Stop"
 
         # if port == "landmarks":
         #     self.landmarks_frame = msg.retrieve()
@@ -49,8 +50,13 @@ class Posture_Classify_Model(BehaviorModelExecutor):
                 self._cur_state = "Wait"  
             
         if self._cur_state == "Next":
-            msg = SysMessage(self.get_name(), "pose_out")
+            msg = SysMessage(self.get_name(), "pose_next")
             msg.insert("Next")
+            return msg
+        
+        if self._cur_state == "Next":
+            msg = SysMessage(self.get_name(), "pose_done")
+            msg.insert("Done")
             return msg
             
             
@@ -58,7 +64,14 @@ class Posture_Classify_Model(BehaviorModelExecutor):
         if self._cur_state == "Next":
             self._cur_state = "Generate"
         elif self._cur_state == "Wait":
-            self._cur_state = "Generate"
+            self._cur_state = "Wait"
+        elif self._cur_state == "Stop":
+            self._cur_state = "Stop"
             
     
-                
+    def pose_select(self):
+        pose = "push up"
+        condition_cout = 3
+        elbow = [165, 190, 1]
+        shoulder = [35, 65, 2]
+        knee = [75, 105, 3]
