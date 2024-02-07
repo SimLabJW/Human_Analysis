@@ -65,8 +65,8 @@ class Posture_Check_Model(BehaviorModelExecutor):
                 # landmark 그리기
                 self.mp_drawing.draw_landmarks(image=self.frame, landmark_list=results.pose_landmarks, connections=self.mp_pose.POSE_CONNECTIONS)
 
-                #추가 코드 : 영상 저장
-                self.video_frame.append(self.frame)
+                # #추가 코드 : 영상 저장
+                # self.video_frame.append(self.frame)
                 
                 # 감지된 landmark 반복
                 for landmark in results.pose_landmarks.landmark:
@@ -77,7 +77,7 @@ class Posture_Check_Model(BehaviorModelExecutor):
             # 요기까지가 landmarks에 대한 수집 부분.
             self.pose_classify(self.landmarks)
             
-            self._cur_state = "Wait"  
+            self._cur_state = "Generate"  
 
 
                         
@@ -96,6 +96,8 @@ class Posture_Check_Model(BehaviorModelExecutor):
             
     def pose_classify(self,landmarks):
         
+        # 각도의 여러가지 방향성 고려가 필요. 머리부터 발끝까지 이룰 수 있는 모든 각도들이 더 존재함.
+
         # 11번, 13번, 15번 landmark 
         # 왼쪽 어깨, 왼쪽 팔꿈치, 왼쪽 손목 landmark angle 값 계산 
         left_elbow_angle = self.calculateAngle(landmarks[self.mp_pose.PoseLandmark.LEFT_SHOULDER.value],
@@ -117,7 +119,7 @@ class Posture_Check_Model(BehaviorModelExecutor):
                                             landmarks[self.mp_pose.PoseLandmark.LEFT_HIP.value])
         # print(f'left shoulder engle : {left_shoulder_angle}')
         # 12번, 14번, 24번 landmark 
-        # 오른쪽 어깨, 오른쪽 팔꿈치, 오른쪽 엉덩이 landmark angle 값 계산  
+        # 오른쪽 팔꿈치, 오른쪽 어깨, 오른쪽 엉덩이 landmark angle 값 계산  
         right_shoulder_angle = self.calculateAngle(landmarks[self.mp_pose.PoseLandmark.RIGHT_HIP.value],
                                             landmarks[self.mp_pose.PoseLandmark.RIGHT_SHOULDER.value],
                                             landmarks[self.mp_pose.PoseLandmark.RIGHT_ELBOW.value])
@@ -134,6 +136,10 @@ class Posture_Check_Model(BehaviorModelExecutor):
                                         landmarks[self.mp_pose.PoseLandmark.RIGHT_KNEE.value],
                                         landmarks[self.mp_pose.PoseLandmark.RIGHT_ANKLE.value])
         
+        print(f"elbow_l : {left_elbow_angle}\nelbow_r : {right_elbow_angle}\n\n\
+              shoulder_l : {left_shoulder_angle}\nshoulder_r : {right_shoulder_angle}\n\n\
+                knee_l : {left_knee_angle}\nknee_r : {right_knee_angle}")
+        
         self.landmarks = []
 
      # 앵글 계산 함수
@@ -147,7 +153,8 @@ class Posture_Check_Model(BehaviorModelExecutor):
         # Calculate the angle between the three points
         angle = math.degrees(math.atan2(y3 - y2, x3 - x2) - math.atan2(y1 - y2, x1 - x2))
         
-        # Check if the angle is less than zero.
+        # angle_degree = angle % 360
+        # # Check if the angle is less than zero.
         if angle < 0:
 
             # Add 360 to the found angle.
@@ -156,14 +163,14 @@ class Posture_Check_Model(BehaviorModelExecutor):
         # Return the calculated angle.
         return angle
     
-    # 손목의 위치를 파악하여 횟수 카운터
-    def counter_(self, landmark_left, landmark_right):
+    # # 손목의 위치를 파악하여 횟수 카운터
+    # def counter_(self, landmark_left, landmark_right):
         
-        # Get the required landmarks coordinates.
-        x_l, y_l, _ = landmark_left
-        x_r, y_r, _ = landmark_right
+    #     # Get the required landmarks coordinates.
+    #     x_l, y_l, _ = landmark_left
+    #     x_r, y_r, _ = landmark_right
   
-        self._cur_state = "ANGLE"
+    #     self._cur_state = "ANGLE"
 
-        time.sleep(10)
+    #     time.sleep(10)
                 
