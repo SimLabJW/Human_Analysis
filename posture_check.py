@@ -42,7 +42,7 @@ class Posture_Check_Model(BehaviorModelExecutor):
     def output(self): 
          #webcam code
         if self._cur_state == "Generate":
-            # 임시 스켈레톤 변환 코드(해당 부분 Alphapose로 대체 예정)
+            # 임시 스켈레톤 변환 코드(해당 부분 Alphapose로 대체 예정) -> (mediapipe로 유지하지만 시뮬레이션 내에서는 사라짐)
             ret, self.frame = self.camera.read()
             self.frame = cv2.flip(self.frame, 1)
             self.frame = cv2.resize(self.frame, (640, 480))
