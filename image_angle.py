@@ -48,8 +48,7 @@ class Image_Pose_Angle_Model(BehaviorModelExecutor):
                 for key, group in loaded_data.items():
                     # print(f"그룹: {key} (총 {group['count']} 개)")///
                     for file_name, number in sorted(group['files'], key=lambda x: x[1]):
-                        print(f"  {file_name}")
-                        print(f"{IMAGE_FILES+file_name}")
+                        
                         image = cv2.imread(IMAGE_FILES+"/"+file_name)
                         
                         image_height, image_width, _ = image.shape
@@ -61,11 +60,11 @@ class Image_Pose_Angle_Model(BehaviorModelExecutor):
                             # 감지된 landmark 반복
                             for landmark in results.pose_landmarks.landmark:
                                 # landmark를 list에 추가하기
-                                self.landmark_zip.append([key,(int(landmark.x * image_width), int(landmark.y * image_height), (landmark.z * image_width))])
+                                self.landmark_zip.append((int(landmark.x * image_width), int(landmark.y * image_height), (landmark.z * image_width)))
 
-                # 요기까지가 landmarks에 대한 수집 부분.
-                elbow,shoulder,knee =  self.pose_classify(self.landmark_zip)
-                print(f"elbow {elbow}\nshoulder {shoulder}\nknee {knee}")
+                        # 요기까지가 landmarks에 대한 수집 부분.
+                        elbow,shoulder,knee =  self.pose_classify(self.landmark_zip)
+                        print(f"key {key}\nelbow {elbow}\nshoulder {shoulder}\nknee {knee}")
                 self._cur_state = "Wait"  
                 
             
