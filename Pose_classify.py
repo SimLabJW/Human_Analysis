@@ -21,6 +21,8 @@ class Posture_Classify_Model(BehaviorModelExecutor):
        
         self.landmarks = []
 
+        self.count = 0
+
         self.next_step = True
         
     def ext_trans(self, port, msg):
