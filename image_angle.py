@@ -21,6 +21,7 @@ class Image_Pose_Angle_Model(BehaviorModelExecutor):
         self.mp_pose = mp.solutions.pose
 
         self.landmark_zip = []
+        self.pose_angle = {}
         
     def ext_trans(self, port, msg):
         
@@ -46,7 +47,8 @@ class Image_Pose_Angle_Model(BehaviorModelExecutor):
 
                 # 읽어온 데이터 출력
                 for key, group in loaded_data.items():
-                    # print(f"그룹: {key} (총 {group['count']} 개)")///
+                    # print(f"그룹: {key} (총 {group['count']} 개)")
+                    self.pose_angle[key] = {'files': [], 'count': group['count']}
                     for file_name, number in sorted(group['files'], key=lambda x: x[1]):
                         
                         image = cv2.imread(IMAGE_FILES+"/"+file_name)
@@ -63,8 +65,15 @@ class Image_Pose_Angle_Model(BehaviorModelExecutor):
                                 self.landmark_zip.append((int(landmark.x * image_width), int(landmark.y * image_height), (landmark.z * image_width)))
 
                         # 요기까지가 landmarks에 대한 수집 부분.
+                        
                         elbow,shoulder,knee =  self.pose_classify(self.landmark_zip)
-                        print(f"key {key}\nelbow {elbow}\nshoulder {shoulder}\nknee {knee}")
+                        self.pose_angle[key]['files'].append((number, ["elbow",elbow], ["shoulder",shoulder], ["knee",knee]))
+
+                # JSON 파일로 저장
+                json_file_path = ANGLE_JSON
+                with open(json_file_path, 'w') as json_file:
+                    json.dump(self.pose_angle, json_file, indent=1)
+                        # print(f"key {key}\nelbow {elbow}\nshoulder {shoulder}\nknee {knee}")
                 self._cur_state = "Wait"  
                 
             
@@ -117,6 +126,7 @@ class Image_Pose_Angle_Model(BehaviorModelExecutor):
                                         landmarks[self.mp_pose.PoseLandmark.RIGHT_KNEE.value],
                                         landmarks[self.mp_pose.PoseLandmark.RIGHT_ANKLE.value])
         
+        self. landmark_zip = []
         return [left_elbow_angle, right_elbow_angle],[left_shoulder_angle, right_shoulder_angle], [left_knee_angle, right_knee_angle]
         
         # self.landmarks = []

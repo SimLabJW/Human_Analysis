@@ -38,7 +38,7 @@ class PoseManager():
 
         # 이미지 자동 각도 계산을 위한 모델 생성.
         self.reading_model.coupling_relation(None, "start", Default_m, "start")
-        # self.reading_model.coupling_relation(None, "start", Reading_m, "start")///
+        # self.reading_model.coupling_relation(None, "start", Reading_m, "start")
 
         # self.health_model.coupling_relation(None, "start", Check_m, "start")
         # self.health_model.coupling_relation(None, "start", Classify_m, "start")

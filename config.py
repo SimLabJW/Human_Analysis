@@ -1,5 +1,6 @@
 IMAGE_FILES = "./Pose_zip"
 IMAGE_JSON = "reading_image.json"
+ANGLE_JSON = "pose_angle.json"
 BG_COLOR = (192, 192, 192)  # 회색
 
 # ####심폐소생술 각도########
