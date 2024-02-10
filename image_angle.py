@@ -1,14 +1,16 @@
 import cv2
 import mediapipe as mp
 import numpy as np
+
 mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
 mp_pose = mp.solutions.pose
 
 landmark_zip = []
 # 이미지 파일의 경우 이것을 사용하세요.:
-IMAGE_FILES = "./Pose_zip/arm_leg_1.png"
+IMAGE_FILES = "arm_leg_1.png"
 BG_COLOR = (192, 192, 192)  # 회색
+
 with mp_pose.Pose(
         static_image_mode=True,
         model_complexity=2,
@@ -21,10 +23,11 @@ with mp_pose.Pose(
         results = pose.process(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
 
         if results.pose_landmarks:
-            # 감지된 landmark 반복
-                for landmark in results.pose_landmarks.landmark:
-                    # landmark를 list에 추가하기
-                    landmark_zip.append((int(landmark.x * image_width), int(landmark.y * image_height), (landmark.z * image_width)))
+            continue
+            # # 감지된 landmark 반복
+            # for landmark in results.pose_landmarks.landmark:
+            #     # landmark를 list에 추가하기
+            #     landmark_zip.append((int(landmark.x * image_width), int(landmark.y * image_height), (landmark.z * image_width)))
 
         annotated_image = image.copy()
         # 이미지를 분할합니다.
