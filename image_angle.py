@@ -6,7 +6,7 @@ mp_drawing_styles = mp.solutions.drawing_styles
 mp_pose = mp.solutions.pose
 
 # 이미지 파일의 경우 이것을 사용하세요.:
-IMAGE_FILES = ["push_up_1.png"]
+IMAGE_FILES = "./Pose_zip/"
 BG_COLOR = (192, 192, 192)  # 회색
 with mp_pose.Pose(
         static_image_mode=True,
