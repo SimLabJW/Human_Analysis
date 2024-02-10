@@ -3,6 +3,7 @@ import cv2
 import numpy as np
 import mediapipe as mp
 import math
+import json
 from config import *
 
 class Image_Pose_Angle_Model(BehaviorModelExecutor):
@@ -36,20 +37,31 @@ class Image_Pose_Angle_Model(BehaviorModelExecutor):
                     enable_segmentation=True,
                     min_detection_confidence=0.5) as pose:
                 
-                print(f"image_files", IMAGE_FILES)
+                # JSON 파일 경로
+                json_file_path = IMAGE_JSON
 
-                image = cv2.imread(IMAGE_FILES)
-                
-                image_height, image_width, _ = image.shape
-                # 처리 전 BGR 이미지를 RGB로 변환합니다.
-                results = pose.process(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+                # JSON 파일 읽어오기
+                with open(json_file_path, 'r') as json_file:
+                    loaded_data = json.load(json_file)
 
-                if results.pose_landmarks:
-                    # continue
-                    # 감지된 landmark 반복
-                    for landmark in results.pose_landmarks.landmark:
-                        # landmark를 list에 추가하기
-                        self.landmark_zip.append((int(landmark.x * image_width), int(landmark.y * image_height), (landmark.z * image_width)))
+                # 읽어온 데이터 출력
+                for key, group in loaded_data.items():
+                    # print(f"그룹: {key} (총 {group['count']} 개)")///
+                    for file_name, number in sorted(group['files'], key=lambda x: x[1]):
+                        print(f"  {file_name}")
+                        print(f"{IMAGE_FILES+file_name}")
+                        image = cv2.imread(IMAGE_FILES+"/"+file_name)
+                        
+                        image_height, image_width, _ = image.shape
+                        # 처리 전 BGR 이미지를 RGB로 변환합니다.
+                        results = pose.process(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+
+                        if results.pose_landmarks:
+                            # continue
+                            # 감지된 landmark 반복
+                            for landmark in results.pose_landmarks.landmark:
+                                # landmark를 list에 추가하기
+                                self.landmark_zip.append([key,(int(landmark.x * image_width), int(landmark.y * image_height), (landmark.z * image_width))])
 
                 # 요기까지가 landmarks에 대한 수집 부분.
                 elbow,shoulder,knee =  self.pose_classify(self.landmark_zip)
