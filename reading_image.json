@@ -1,0 +1,36 @@
+{
+  "arm_leg_.png": {
+    "files": [
+      [
+        "arm_leg_1.png",
+        1
+      ],
+      [
+        "arm_leg_2.png",
+        2
+      ],
+      [
+        "arm_leg_3.png",
+        3
+      ]
+    ],
+    "count": 3
+  },
+  "push_up.jpg": {
+    "files": [
+      [
+        "push_up1.jpg",
+        1
+      ],
+      [
+        "push_up2.jpg",
+        2
+      ],
+      [
+        "push_up3.jpg",
+        3
+      ]
+    ],
+    "count": 3
+  }
+}
