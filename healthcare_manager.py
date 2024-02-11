@@ -42,9 +42,9 @@ class PoseManager():
 
         # 이미지 데이터 수신 및 기존 조건과의 비교 및 결과 판독
         self.health_model.coupling_relation(None, "start", Check_m, "start")
-        self.health_model.coupling_relation(None, "start", Classify_m, "start")
-        self.health_model.coupling_relation(Classify_m, "pose_next", Classify_m, "_ing")
-        self.health_model.coupling_relation(Classify_m, "pose_done", Classify_m, "Done")
+        self.health_model.coupling_relation(Check_m, "pose_out", Classify_m, "start")
+        # self.health_model.coupling_relation(Classify_m, "pose_next", Classify_m, "_ing")
+        # self.health_model.coupling_relation(Classify_m, "pose_done", Classify_m, "Done")
 
         self.start()
 

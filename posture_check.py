@@ -15,8 +15,9 @@ class Posture_Check_Model(BehaviorModelExecutor):
         self.init_state("Wait")
         self.insert_state("Wait", Infinite)
         self.insert_state("Generate",1)
+        self.insert_state("angle_trans")
         self.insert_input_port("start")
-        # self.insert_output_port("pose_out")
+        self.insert_output_port("pose_out")
         
         self.camera = cv2.VideoCapture(0)
 
@@ -35,17 +36,12 @@ class Posture_Check_Model(BehaviorModelExecutor):
         if port == "start":
             self._cur_state = "Generate"
 
-        if port == "landmarks":
-            self.landmarks_frame = msg.retrieve()
-            self.pose_classify(self.landmarks_frame[0][1])
       
     def output(self): 
          #webcam code
         if self._cur_state == "Generate":
             # 임시 스켈레톤 변환 코드(해당 부분 Alphapose로 대체 예정) -> (mediapipe로 유지하지만 시뮬레이션 내에서는 사라짐)
             ret, self.frame = self.camera.read()
-            self.frame = cv2.flip(self.frame, 1)
-            self.frame = cv2.resize(self.frame, (640, 480))
 
             image = cv2.cvtColor(self.frame, cv2.COLOR_BGR2RGB)
             image.flags.writeable = False
@@ -55,9 +51,7 @@ class Posture_Check_Model(BehaviorModelExecutor):
 
             image.flags.writeable = True
             image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-            
-            # detection landmarks를 저장할 빈 list 초기화
-            
+
 
             # landmark가 감지 되었는지 확인
             if results.pose_landmarks:
@@ -73,22 +67,20 @@ class Posture_Check_Model(BehaviorModelExecutor):
 
                     # landmark를 list에 추가하기
                     self.landmarks.append((int(landmark.x * width), int(landmark.y * height), (landmark.z * width)))
-
-            # 요기까지가 landmarks에 대한 수집 부분.
-            self.pose_classify(self.landmarks)
             
-            self._cur_state = "Generate"  
-
-
-                        
-        # if self._cur_state == "start":
-            # msg = SysMessage(self.get_name(), "pose_out")
-            # # msg.insert()
-            # return msg
+            # 요기까지가 landmarks에 대한 수집 부분.
+            elbow,shoulder,knee = self.pose_classify(self.landmarks)
+            
+            self._cur_state = "angle_trans"  
+     
+        if self._cur_state == "angle_trans":
+            msg = SysMessage(self.get_name(), "pose_out")
+            msg.insert([elbow, shoulder, knee])
+            return msg
             
             
     def int_trans(self):
-        if self._cur_state == "Generate":
+        if self._cur_state == "angle_trans":
             self._cur_state = "Generate"
         elif self._cur_state == "Wait":
             self._cur_state = "Wait"
@@ -136,11 +128,8 @@ class Posture_Check_Model(BehaviorModelExecutor):
                                         landmarks[self.mp_pose.PoseLandmark.RIGHT_KNEE.value],
                                         landmarks[self.mp_pose.PoseLandmark.RIGHT_ANKLE.value])
         
-        print(f"elbow_l : {left_elbow_angle}\nelbow_r : {right_elbow_angle}\n\n\
-              shoulder_l : {left_shoulder_angle}\nshoulder_r : {right_shoulder_angle}\n\n\
-                knee_l : {left_knee_angle}\nknee_r : {right_knee_angle}")
-        
         self.landmarks = []
+        return [left_elbow_angle, right_elbow_angle],[left_shoulder_angle, right_shoulder_angle], [left_knee_angle, right_knee_angle]
 
      # 앵글 계산 함수
     def calculateAngle(self, landmark1, landmark2, landmark3):
