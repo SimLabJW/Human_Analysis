@@ -64,10 +64,10 @@ class Image_Pose_Angle_Model(BehaviorModelExecutor):
                                 # landmark를 list에 추가하기
                                 self.landmark_zip.append((int(landmark.x * image_width), int(landmark.y * image_height), (landmark.z * image_width)))
 
-                        # 요기까지가 landmarks에 대한 수집 부분.
+                            # 요기까지가 landmarks에 대한 수집 부분.
                         
-                        elbow,shoulder,knee =  self.pose_classify(self.landmark_zip)
-                        self.pose_angle[key]['files'].append((number, ["elbow",elbow], ["shoulder",shoulder], ["knee",knee]))
+                            elbow,shoulder,knee =  self.pose_classify(self.landmark_zip)
+                            self.pose_angle[key]['files'].append((number, [elbow, shoulder, knee]))
 
                 # JSON 파일로 저장
                 json_file_path = ANGLE_JSON

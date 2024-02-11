@@ -17,6 +17,8 @@ class Posture_Check_Model(BehaviorModelExecutor):
         self.insert_state("Generate",1)
         self.insert_state("angle_trans")
         self.insert_input_port("start")
+        self.insert_input_port("next")
+        self.insert_input_port("-ing")
         self.insert_output_port("pose_out")
         
         self.camera = cv2.VideoCapture(0)
@@ -25,15 +27,22 @@ class Posture_Check_Model(BehaviorModelExecutor):
         self.mp_drawing = mp.solutions.drawing_utils
         self.mp_pose = mp.solutions.pose
         self.pose_data = self.mp_pose.Pose(static_image_mode=False, min_detection_confidence=0.5, model_complexity=1)
-        
-        self.start = time.time()
 
-        self.video_frame = [] 
         self.landmarks = []
+        self.count = 0
         
     def ext_trans(self, port, msg):
         
         if port == "start":
+            self._cur_state = "Generate"
+
+        if port == "-ing": #실패
+            # print("classify -> check")
+            self.count = msg.retrieve()[0][1]
+            self._cur_state = "Generate"
+        if port == "next": #성공
+           
+            self.count = msg.retrieve()[0][1]
             self._cur_state = "Generate"
 
       
@@ -42,16 +51,10 @@ class Posture_Check_Model(BehaviorModelExecutor):
         if self._cur_state == "Generate":
             # 임시 스켈레톤 변환 코드(해당 부분 Alphapose로 대체 예정) -> (mediapipe로 유지하지만 시뮬레이션 내에서는 사라짐)
             ret, self.frame = self.camera.read()
-
-            image = cv2.cvtColor(self.frame, cv2.COLOR_BGR2RGB)
-            image.flags.writeable = False
-            results = self.pose_data.process(image)
+            
             # input image의 너비&높이 탐색
-            height, width, _ = image.shape
-
-            image.flags.writeable = True
-            image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-
+            height, width, _ = self.frame.shape
+            results = self.pose_data.process(cv2.cvtColor(self.frame, cv2.COLOR_BGR2RGB))
 
             # landmark가 감지 되었는지 확인
             if results.pose_landmarks:
@@ -59,23 +62,24 @@ class Posture_Check_Model(BehaviorModelExecutor):
                 # landmark 그리기
                 self.mp_drawing.draw_landmarks(image=self.frame, landmark_list=results.pose_landmarks, connections=self.mp_pose.POSE_CONNECTIONS)
 
-                # #추가 코드 : 영상 저장
-                # self.video_frame.append(self.frame)
-                
                 # 감지된 landmark 반복
                 for landmark in results.pose_landmarks.landmark:
 
                     # landmark를 list에 추가하기
                     self.landmarks.append((int(landmark.x * width), int(landmark.y * height), (landmark.z * width)))
             
-            # 요기까지가 landmarks에 대한 수집 부분.
-            elbow,shoulder,knee = self.pose_classify(self.landmarks)
+                # 요기까지가 landmarks에 대한 수집 부분.
+                elbow,shoulder,knee = self.pose_classify(self.landmarks)
             
-            self._cur_state = "angle_trans"  
+                self._cur_state = "angle_trans"  
+            cv2.imshow("mobile image", self.frame)
+            cv2.waitKey(1)  
+            
      
         if self._cur_state == "angle_trans":
             msg = SysMessage(self.get_name(), "pose_out")
-            msg.insert([elbow, shoulder, knee])
+            msg.insert([self.count, [elbow, shoulder, knee]])
+            
             return msg
             
             
@@ -129,7 +133,8 @@ class Posture_Check_Model(BehaviorModelExecutor):
                                         landmarks[self.mp_pose.PoseLandmark.RIGHT_ANKLE.value])
         
         self.landmarks = []
-        return [left_elbow_angle, right_elbow_angle],[left_shoulder_angle, right_shoulder_angle], [left_knee_angle, right_knee_angle]
+        
+        return [left_elbow_angle, right_elbow_angle],[left_shoulder_angle, right_shoulder_angle],[left_knee_angle, right_knee_angle]
 
      # 앵글 계산 함수
     def calculateAngle(self, landmark1, landmark2, landmark3):
@@ -152,14 +157,3 @@ class Posture_Check_Model(BehaviorModelExecutor):
         # Return the calculated angle.
         return angle
     
-    # # 손목의 위치를 파악하여 횟수 카운터
-    # def counter_(self, landmark_left, landmark_right):
-        
-    #     # Get the required landmarks coordinates.
-    #     x_l, y_l, _ = landmark_left
-    #     x_r, y_r, _ = landmark_right
-  
-    #     self._cur_state = "ANGLE"
-
-    #     time.sleep(10)
-                

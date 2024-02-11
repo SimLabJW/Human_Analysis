@@ -1,45 +1,30 @@
-import matplotlib.pyplot as plt
-import numpy as np
+def calculate_individual_avgs(data):
+    individual_avgs = [[sum(item) / len(item) for item in sublist] for sublist in data]
+    return individual_avgs
 
-def plot_pose(file_data):
-    for entry in file_data["files"]:
-        plt.figure()
-        plt.title(f"Pose {entry[0]}")
+# 주어진 데이터
+list1 = [[196.26094276589902, 161.09588014458723], [100.11451895970575, 15.79033470800142], [181.1045284571304, 183.3543642897043]]
+list2 = [[176.20373732456994, 177.11076305799543], [9.936236418993877, 13.50451136031985], [177.8235356530215, 177.92432727487738]]
+# 추가 리스트를 필요한 만큼 추가할 수 있습니다.
+
+# 각 리스트의 개별 항목에 대한 평균값 계산 및 출력
+individual_avgs = calculate_individual_avgs([list1, list2])
+
+def result_acces(individual_avgs, threshold):
+    for i in range(len(individual_avgs)):
+
+        lower_limit = individual_avgs[1][i] - threshold
+        upper_limit = individual_avgs[1][i] + threshold
         
-        # Extracting data
-        elbow = np.array(entry[1][1])
-        shoulder = np.array(entry[2][1])
-        knee = np.array(entry[3][1])
+        if lower_limit < 0:
+            # 처리를 위해 음수를 +360하여 범위를 맞춰줍니다.
+            lower_limit = 0
 
-        # Plotting lines
-        plt.plot([elbow[0], shoulder[0]], [elbow[1], shoulder[1]], label='Arm')
-        plt.plot([shoulder[0], knee[0]], [shoulder[1], knee[1]], label='Leg')
+        if not (lower_limit <= individual_avgs[0][i] <= upper_limit):
+            print(f"{lower_limit} {individual_avgs[0][i]} {upper_limit}")
+            return False
 
-        # Plotting joints
-        plt.scatter(elbow[0], elbow[1], color='red', marker='o', label='Elbow')
-        plt.scatter(shoulder[0], shoulder[1], color='blue', marker='o', label='Shoulder')
-        plt.scatter(knee[0], knee[1], color='green', marker='o', label='Knee')
+    return True
 
-        plt.legend()
-        plt.show()
-
-# 데이터 샘플 사용
-data = {
-    "arm_leg_.png": {
-        "files": [
-            [1, ["elbow", [176.20373732456994, 177.11076305799543]],
-             ["shoulder", [9.936236418993877, 13.50451136031985]],
-             ["knee", [177.8235356530215, 177.92432727487738]]],
-            [2, ["elbow", [170.8856355307854, 185.5529710330368]],
-             ["shoulder", [92.83044715607141, 92.79092055099628]],
-             ["knee", [175.10477374514338, 180.82315858332905]]],
-            [3, ["elbow", [176.20373732456994, 177.11076305799543]],
-             ["shoulder", [9.936236418993877, 13.50451136031985]],
-             ["knee", [177.8235356530215, 177.92432727487738]]]
-        ],
-        "count": 3
-    }
-}
-
-# plot_pose 함수 호출
-plot_pose(data["arm_leg_.png"])
+result = result_acces(individual_avgs,15)
+print(result)

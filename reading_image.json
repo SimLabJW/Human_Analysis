@@ -32,5 +32,22 @@
       ]
     ],
     "count": 3
+  },
+  "sit-up.jpg": {
+    "files": [
+      [
+        "Sit-up1.jpg",
+        1
+      ],
+      [
+        "Sit-up2.jpg",
+        2
+      ],
+      [
+        "Sit-up3.jpg",
+        3
+      ]
+    ],
+    "count": 3
   }
 }
