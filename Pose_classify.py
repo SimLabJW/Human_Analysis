@@ -37,14 +37,12 @@ class Posture_Classify_Model(BehaviorModelExecutor):
     def ext_trans(self, port, msg):
         
         if port == "start":
-            # print("aaaaaaaaaaaaaaaaaaaaaa")
             # 동작 기준 정보 불러오기
             self.landmarks_frame = msg.retrieve()
             self.count = self.landmarks_frame[0][0]
             self.landmarks_frame = self.landmarks_frame[0][1]
   
-            # self._cur_state = "Generate"
-            self._cur_state = "Stop" 
+            self._cur_state = "Generate"
 
       
     def output(self): 
@@ -102,10 +100,10 @@ class Posture_Classify_Model(BehaviorModelExecutor):
 
         for angle in range(self.default_count):
             self.default_angle.append(default_pose_info['files'][angle])
-        # print(self.default_angle[0])
+
   
     def contrast_angle(self, input_data, default_data,threshold):
-        # print(f"default data\n{default_data}")
+
         individual_avgs = [[sum(item) / len(item) for item in sublist] for sublist in [input_data, default_data]]
         for i in range(len(individual_avgs)):
 
@@ -116,7 +114,6 @@ class Posture_Classify_Model(BehaviorModelExecutor):
                 lower_limit = 0
 
             if not (lower_limit <= individual_avgs[0][i] <= upper_limit):
-                # print(f"{lower_limit} {individual_avgs[0][i]} {upper_limit}")
                 return False
 
         return True
