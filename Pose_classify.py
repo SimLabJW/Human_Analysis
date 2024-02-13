@@ -56,7 +56,7 @@ class Posture_Classify_Model(BehaviorModelExecutor):
 
         if self._cur_state == "Generate":
             # 조건 자동삽입
-            if (self.count +1) < self.default_count:
+            if self.count  < self.default_count:
                 # print("---------------------------------")
 
                 result = self.contrast_angle(self.landmarks_frame,\
