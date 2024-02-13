@@ -1,7 +1,4 @@
 from pyevsim import BehaviorModelExecutor, Infinite, SysMessage
-import numpy as np
-import math
-import matplotlib as plt
 from config import *
 import json
 
@@ -10,12 +7,14 @@ class Posture_Classify_Model(BehaviorModelExecutor):
         BehaviorModelExecutor.__init__(self, instance_time, destruct_time, name, engine_name)
         
         self.init_state("Wait")
-        self.insert_state("Wait", Infinite)
 
-        self.insert_state("Stop", Infinite)
-        self.insert_state("Generate",0)
+        self.insert_state("Wait", Infinite)
+        self.insert_state("Generate",1)
+        
         self.insert_state("Next_s",1)
         self.insert_state("Next_f",1)
+        self.insert_state("Stop",1)
+
         self.insert_input_port("start")
         self.insert_input_port("-ing")
         self.insert_input_port("Done")
@@ -34,31 +33,25 @@ class Posture_Classify_Model(BehaviorModelExecutor):
         # 입력 값에 대한 정보 수정
         self.landmarks = []
         self.count = 0
-
-        #상태확인
-        self.next_step = True
         
     def ext_trans(self, port, msg):
         
         if port == "start":
+            # print("aaaaaaaaaaaaaaaaaaaaaa")
             # 동작 기준 정보 불러오기
             self.landmarks_frame = msg.retrieve()
             self.count = self.landmarks_frame[0][0]
             self.landmarks_frame = self.landmarks_frame[0][1]
-            # print(self.landmarks_frame)
-            self._cur_state = "Generate"
+  
+            # self._cur_state = "Generate"
+            self._cur_state = "Stop" 
 
-        # if port == "landmarks":
-        #     self.landmarks_frame = msg.retrieve()
-        #     self.pose_classify(self.landmarks_frame[0][1])
       
     def output(self): 
 
         if self._cur_state == "Generate":
             # 조건 자동삽입
             if self.count  < self.default_count:
-                # print("---------------------------------")
-
                 result = self.contrast_angle(self.landmarks_frame,\
                                             self.default_angle[self.count][1],15)
                 if result:
@@ -68,29 +61,32 @@ class Posture_Classify_Model(BehaviorModelExecutor):
                     # print("주어진 데이터는 기준 데이터의 범위를 벗어납니다.")
                     self._cur_state = "Next_f" 
 
-                
             else:
                 print("pose simulation Done")
-                self.next_step = False
-                self._cur_state = "Wait"  
+                self._cur_state = "Stop"  
             
-        if self._cur_state == "Next_s":
+        elif self._cur_state == "Next_s":
             msg = SysMessage(self.get_name(), "pose_next_s")
             msg.insert(["Succes", self.count+1])
             return msg
         
-        if self._cur_state == "Next_f":
+        elif self._cur_state == "Next_f":
             msg = SysMessage(self.get_name(), "pose_next_f")
             msg.insert(["Fail", self.count])
+            return msg
+        
+        elif self._cur_state == "Stop":
+            msg = SysMessage(self.get_name(), "pose_done")
+            msg.insert("Fail or Succes")
             return msg
             
     def int_trans(self):
         if self._cur_state == "Generate":
-            self._cur_state = "Generate"
+            self._cur_state = "Wait"
         elif self._cur_state == "Wait":
             self._cur_state = "Wait"
         elif self._cur_state == "Stop":
-            self._cur_state = "Stop"
+            self._cur_state = "Wait"
             
     
     def pose_determine(self):

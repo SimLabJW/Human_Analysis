@@ -11,7 +11,9 @@ class Reading_Folder_Model(BehaviorModelExecutor):
         self.init_state("Wait")
         self.insert_state("Wait", Infinite)
         self.insert_state("Generate",1)
+        self.insert_state("Pose_DETECT",1)
         self.insert_input_port("start")
+        self.insert_output_port("Done")
 
         self.grouped_files = {}
         self.count = 0
@@ -42,12 +44,17 @@ class Reading_Folder_Model(BehaviorModelExecutor):
             with open(json_file_path, 'w') as json_file:
                 json.dump(self.grouped_files, json_file, indent=2)
                 
-            self._cur_state = "Wait"  
+            self._cur_state = "Pose_DETECT"  
+        
+        if self._cur_state == "Pose_DETECT":
+            msg = SysMessage(self.get_name(), "Done")
+            msg.insert("Done")
+            return msg
             
     def int_trans(self):
         if self._cur_state == "Generate":
             self._cur_state = "Generate"
-        elif self._cur_state == "Wait":
+        elif self._cur_state == "Pose_DETECT":
             self._cur_state = "Wait"
 
 
