@@ -7,12 +7,12 @@ from return_result import Return_result_Model
 
 
 class PoseManager():
-    def __init__(self,data) -> None:
+    def __init__(self) -> None:
         # print(data)
         self.ss = SystemSimulator()
         # self.ris = SystemSimulator()
 
-        self.ss.register_engine("CARE", "VIRTUAL_TIME", 0.1)
+        self.ss.register_engine("CARE", "VIRTUAL_TIME", 1)
         # self.ris.register_engine("READ", "VIRTUAL_TIME", 1)
 
         self.health_model = self.ss.get_engine("CARE")
@@ -27,7 +27,7 @@ class PoseManager():
         # self.reading_model.insert_input_port("start")
         
         print("start engine")
-        Check_m = Posture_Check_Model(0, Infinite, "Check_m", "CARE", data=data)
+        Check_m = Posture_Check_Model(0, Infinite, "Check_m", "CARE")
         Classify_m = Posture_Classify_Model(0, Infinite, "Classify_m", "CARE")
         Result_m = Return_result_Model(0, Infinite, "Result_m", "CARE")
 

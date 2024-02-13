@@ -3,11 +3,14 @@ import numpy as np
 import math
 import matplotlib as plt
 import mediapipe as mp
-
+import json
+import requests
+from config import *
 
 
 class Posture_Check_Model(BehaviorModelExecutor):
-    def __init__(self, instance_time, destruct_time, name, engine_name, data):
+    input_save = ''
+    def __init__(self, instance_time, destruct_time, name, engine_name):
         BehaviorModelExecutor.__init__(self, instance_time, destruct_time, name, engine_name)
         
         self.init_state("Wait")
@@ -22,10 +25,8 @@ class Posture_Check_Model(BehaviorModelExecutor):
         self.insert_input_port("-ing")
 
         self.insert_output_port("pose_out")
-        
-        self.data = data
-        # self.camera = cv2.VideoCapture(0)
 
+        # self.camera = cv2.VideoCapture(0)
         # frame_Data to Pose Data(임시_pose데이터 수집기 mediapipe)
         # self.mp_drawing = mp.solutions.drawing_utils
         self.mp_pose = mp.solutions.pose
@@ -52,33 +53,42 @@ class Posture_Check_Model(BehaviorModelExecutor):
     def output(self): 
          #webcam code
         if self._cur_state == "Generate":
+            
             # 임시 스켈레톤 변환 코드(해당 부분 Alphapose로 대체 예정) -> (mediapipe로 유지하지만 시뮬레이션 내에서는 사라짐)
             # ret, self.frame = self.camera.read()
-            
+            response = requests.get(URL, params={'key': 'value'})
+            if response.status_code == 200:
+                received_data = response.json()
+                self.input_save = received_data['input_data']
+
+            else:
+                self._cur_state = "Generate"
+                
             # # input image의 너비&높이 탐색
             # height, width, _ = self.frame.shape
             # results = self.pose_data.process(cv2.cvtColor(self.frame, cv2.COLOR_BGR2RGB))
-
+            
             # landmark가 감지 되었는지 확인
-            if self.data:
+            if self.input_save:
                 # landmark 그리기
                 # self.mp_drawing.draw_landmarks(image=self.frame, landmark_list=results.pose_landmarks, connections=self.mp_pose.POSE_CONNECTIONS)
                 # 감지된 landmark 반복
-                for landmark in range(len(self.data)):
+
+                for landmark in range(len(self.input_save)):
                     
                     # landmark를 list에 추가하기
-                    self.landmarks.append((int(self.data[landmark]['X']), int(self.data[landmark]['Y']), (self.data[landmark]['Z'])))
+                    self.landmarks.append((int(self.input_save[landmark]['X']*640), int(self.input_save[landmark]['Y']*320), (self.input_save[landmark]['Z']*640))) #데이터 받기전 넓이, 높이 곱하기 필요.
             
-                # 요기까지가 landmarks에 대한 수집 부분.
+                # # 요기까지가 landmarks에 대한 수집 부분.
                 elbow,shoulder,knee = self.pose_classify(self.landmarks)
+                print(f"elbow {elbow}\nshoulder {shoulder}\nknee {knee}")
                 
                 self._cur_state = "angle_trans"  
+                # cv2.imshow("mobile image", self.frame)
+                # cv2.waitKey(1)  
+
             else:
                 self._cur_state = "Generate"
-            # cv2.imshow("mobile image", self.frame)
-            # cv2.waitKey(1)  
-                
-            # print(f"elbow {elbow}\nshoulder {shoulder}\nknee {knee}")
             
      
         if self._cur_state == "angle_trans":

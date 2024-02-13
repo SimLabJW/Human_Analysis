@@ -4,6 +4,7 @@ ANGLE_JSON = "pose_angle.json"
 RESULT_JSON = "result_pose.json"
 # RESULT_DATA = ""
 BG_COLOR = (192, 192, 192)  # 회색
+URL = 'http://localhost:9999/simulate'
 
 Key_LIST = ['ID', 'Way', 'Health', 'S/F', 'Pose_Data']
 # ####심폐소생술 각도########
