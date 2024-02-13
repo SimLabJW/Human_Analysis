@@ -42,7 +42,7 @@ class Posture_Classify_Model(BehaviorModelExecutor):
             self.count = self.landmarks_frame[0][0]
             self.landmarks_frame = self.landmarks_frame[0][1]
   
-            self._cur_state = "Generate"
+            self._cur_state = "Stop"
 
       
     def output(self): 

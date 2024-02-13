@@ -61,7 +61,6 @@ class Posture_Check_Model(BehaviorModelExecutor):
 
             # landmark가 감지 되었는지 확인
             if self.data:
-                print(self.data)
                 # landmark 그리기
                 # self.mp_drawing.draw_landmarks(image=self.frame, landmark_list=results.pose_landmarks, connections=self.mp_pose.POSE_CONNECTIONS)
                 # 감지된 landmark 반복
