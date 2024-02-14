@@ -12,7 +12,7 @@ class PoseManager():
         self.ss = SystemSimulator()
         # self.ris = SystemSimulator()
 
-        self.ss.register_engine("CARE", "VIRTUAL_TIME", 1)
+        self.ss.register_engine("CARE", "VIRTUAL_TIME", 0.1)
         # self.ris.register_engine("READ", "VIRTUAL_TIME", 1)
 
         self.health_model = self.ss.get_engine("CARE")
