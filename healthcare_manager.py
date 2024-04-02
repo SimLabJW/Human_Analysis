@@ -51,7 +51,6 @@ class PoseManager():
         self.health_model.coupling_relation(Check_m, "pose_out", Classify_m, "start")
         self.health_model.coupling_relation(Classify_m, "pose_next_s", Check_m, "next")
         self.health_model.coupling_relation(Classify_m, "pose_next_f", Check_m, "-ing")
-
         self.health_model.coupling_relation(Classify_m, "pose_done", Result_m, "stop")
 
         self.start()
