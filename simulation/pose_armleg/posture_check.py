@@ -1,100 +1,96 @@
 from pyevsim import BehaviorModelExecutor, Infinite, SysMessage
-import cv2
 import numpy as np
-import mediapipe as mp
 import math
+import matplotlib as plt
+import mediapipe as mp
 import json
+import requests
 from config import *
 
-class Image_Pose_Angle_Model(BehaviorModelExecutor):
+
+class Posture_Check_Model(BehaviorModelExecutor):
+    input_save = ''
     def __init__(self, instance_time, destruct_time, name, engine_name):
         BehaviorModelExecutor.__init__(self, instance_time, destruct_time, name, engine_name)
         
         self.init_state("Wait")
+
         self.insert_state("Wait", Infinite)
         self.insert_state("Generate",1)
+
+        self.insert_state("angle_trans")
+
         self.insert_input_port("start")
+        self.insert_input_port("next")
+        self.insert_input_port("-ing")
 
-        # frame_Data to Pose Data(임시_pose데이터 수집기 mediapipe)
-        self.mp_drawing = mp.solutions.drawing_utils
-        self.mp_drawing_styles = mp.solutions.drawing_styles
+        self.insert_output_port("pose_out")
+
         self.mp_pose = mp.solutions.pose
+        # self.pose_data = self.mp_pose.Pose(static_image_mode=False, min_detection_confidence=0.5, model_complexity=1)
 
-        self.landmark_zip = []
-        self.pose_angle = {}
+        self.landmarks = []
+        self.count = 0
         
     def ext_trans(self, port, msg):
         
         if port == "start":
             self._cur_state = "Generate"
+
+        if port == "-ing": #실패
+            # print("classify -> check")
+            self.count = msg.retrieve()[0][1]
+            self._cur_state = "Generate"
+        if port == "next": #성공
+           
+            self.count = msg.retrieve()[0][1]
+            self._cur_state = "Generate"
+
       
     def output(self): 
-        #code
+         #webcam code
         if self._cur_state == "Generate":
+            
 
-            with self.mp_pose.Pose(
-                    static_image_mode=True,
-                    model_complexity=2,
-                    enable_segmentation=True,
-                    min_detection_confidence=0.5) as pose:
+            response = requests.get(URL, params={'key': 'value'})
+            if response.status_code == 200:
+                received_data = response.json()
+                self.input_save = received_data['input_data']
+
+            else:
+                self._cur_state = "Generate"
+            
+
+            if self.input_save:
+                for landmark in range(len(self.input_save)):
+                    
+                    self.landmarks.append((int(self.input_save[landmark]['X']*640), int(self.input_save[landmark]['Y']*320), (self.input_save[landmark]['Z']*640))) #데이터 받기전 넓이, 높이 곱하기 필요.
+
+                elbow,shoulder,knee = self.pose_classify(self.landmarks)
+                print(f"elbow {elbow}\nshoulder {shoulder}\nknee {knee}")
                 
-                # JSON 파일 경로
-                json_file_path = IMAGE_JSON
+                self._cur_state = "angle_trans"  
 
-                # JSON 파일 읽어오기
-                with open(json_file_path, 'r') as json_file:
-                    loaded_data = json.load(json_file)
-
-                # 읽어온 데이터 출력
-                for key, group in loaded_data.items():
-                    # print(f"그룹: {key} (총 {group['count']} 개)")
-                    self.pose_angle[key] = {'files': [], 'count': group['count']}
-                    for file_name, number in sorted(group['files'], key=lambda x: x[1]):
-                        
-                        image = cv2.imread(IMAGE_FILES+"/"+file_name)
-                        
-                        image_height, image_width, _ = image.shape
-                        # 처리 전 BGR 이미지를 RGB로 변환합니다.
-                        results = pose.process(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
-
-                        # if file_name == "sit-up1.jpg":
-                        #     if not results.pose_landmarks:
-                        #         continue
-                        #     else:
-                        #         print("no")
-                        #     cv2.imshow('Image', image)
-                        #     cv2.waitKey(0)
-                        #     cv2.destroyAllWindows()
-                        
-
-                        if results.pose_landmarks:
-                            
-                            # continue
-                            # 감지된 landmark 반복
-                            for landmark in results.pose_landmarks.landmark:
-                                # landmark를 list에 추가하기
-                                self.landmark_zip.append((int(landmark.x * image_width), int(landmark.y * image_height), (landmark.z * image_width)))
-
-                            # 요기까지가 landmarks에 대한 수집 부분.
-                        
-                            elbow,shoulder,knee =  self.pose_classify(self.landmark_zip)
-                            self.pose_angle[key]['files'].append((number, [elbow, shoulder, knee]))
-
-                # JSON 파일로 저장
-                json_file_path = ANGLE_JSON
-                with open(json_file_path, 'w') as json_file:
-                    json.dump(self.pose_angle, json_file, indent=1)
-                        # print(f"key {key}\nelbow {elbow}\nshoulder {shoulder}\nknee {knee}")
-                self._cur_state = "Wait"  
-                
+            else:
+                self._cur_state = "Generate"
+            
+     
+        if self._cur_state == "angle_trans":
+            msg = SysMessage(self.get_name(), "pose_out")
+            msg.insert([self.count, [elbow, shoulder, knee]])
+            
+            return msg
             
             
     def int_trans(self):
-        if self._cur_state == "Generate":
+        if self._cur_state == "angle_trans":
             self._cur_state = "Generate"
         elif self._cur_state == "Wait":
             self._cur_state = "Wait"
-
+        elif self._cur_state == "Generate":
+            self._cur_state = "Generate"
+            
+            
     def pose_classify(self,landmarks):
         
         # 각도의 여러가지 방향성 고려가 필요. 머리부터 발끝까지 이룰 수 있는 모든 각도들이 더 존재함.
@@ -137,10 +133,9 @@ class Image_Pose_Angle_Model(BehaviorModelExecutor):
                                         landmarks[self.mp_pose.PoseLandmark.RIGHT_KNEE.value],
                                         landmarks[self.mp_pose.PoseLandmark.RIGHT_ANKLE.value])
         
-        self. landmark_zip = []
-        return [left_elbow_angle, right_elbow_angle],[left_shoulder_angle, right_shoulder_angle], [left_knee_angle, right_knee_angle]
+        self.landmarks = []
         
-        # self.landmarks = []
+        return [left_elbow_angle, right_elbow_angle],[left_shoulder_angle, right_shoulder_angle],[left_knee_angle, right_knee_angle]
 
      # 앵글 계산 함수
     def calculateAngle(self, landmark1, landmark2, landmark3):
@@ -162,3 +157,4 @@ class Image_Pose_Angle_Model(BehaviorModelExecutor):
         
         # Return the calculated angle.
         return angle
+    

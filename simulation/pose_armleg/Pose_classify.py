@@ -1,6 +1,5 @@
 from pyevsim import BehaviorModelExecutor, Infinite, SysMessage
-from config import *
-import json
+# from config import *
 
 class Posture_Classify_Model(BehaviorModelExecutor):
     def __init__(self, instance_time, destruct_time, name, engine_name):
@@ -25,7 +24,7 @@ class Posture_Classify_Model(BehaviorModelExecutor):
        
         # 기존 정보들에 대한 정보
 
-        self.default_pose = "arm_leg_.png"
+        # self.default_pose = "arm_leg_.png"
         self.default_count = 0
         self.default_angle = []
 
@@ -89,21 +88,21 @@ class Posture_Classify_Model(BehaviorModelExecutor):
     
     def pose_determine(self):
 
-        # # JSON 파일 경로
-        # json_file_path = ANGLE_JSON
-        # # JSON 파일 읽어오기
-        # with open(json_file_path, 'r') as json_file:
-        #     loaded_data = json.load(json_file)
+        self.default_count = 3
 
-        # default_pose_info = loaded_data[self.default_pose]
-        # self.default_count = default_pose_info["count"]
-
-        self.default_count = ""
-
-        # for angle in range(self.default_count):
-        #     self.default_angle.append(default_pose_info['files'][angle])
-
-        self.default_angle.append("")
+        armleg_angle = [
+            [1,
+             [[176.20373732456994,177.11076305799543],[9.936236418993877,13.50451136031985],[177.8235356530215,177.92432727487738]]
+             ],
+             [2,
+              [[170.8856355307854,185.5529710330368],[92.83044715607141,92.79092055099628],[175.10477374514338,180.82315858332905]]
+              ],
+              [3,
+               [[176.20373732456994,177.11076305799543],[9.936236418993877,13.50451136031985],[177.8235356530215,177.92432727487738]]
+               ]
+        ]
+        
+        self.default_angle.append(armleg_angle)
 
   
     def contrast_angle(self, input_data, default_data,threshold):

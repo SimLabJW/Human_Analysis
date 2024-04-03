@@ -33,18 +33,18 @@
     ],
     "count": 3
   },
-  "sit-up.jpg": {
+  "sit_up_.jpg": {
     "files": [
       [
-        "Sit-up1.jpg",
+        "sit_up_1.jpg",
         1
       ],
       [
-        "Sit-up2.jpg",
+        "sit_up_2.jpg",
         2
       ],
       [
-        "Sit-up3.jpg",
+        "sit_up_3.jpg",
         3
       ]
     ],
