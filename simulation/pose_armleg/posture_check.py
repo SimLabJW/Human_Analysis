@@ -5,7 +5,7 @@ import matplotlib as plt
 import mediapipe as mp
 import json
 import requests
-from config import *
+from simulation.config import *
 
 
 class Posture_Check_Model(BehaviorModelExecutor):

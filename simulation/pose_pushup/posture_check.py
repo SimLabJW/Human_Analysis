@@ -5,6 +5,11 @@ import matplotlib as plt
 import mediapipe as mp
 import json
 import requests
+
+
+import sys
+import os
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'simulation'))
 from config import *
 
 

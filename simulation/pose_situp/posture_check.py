@@ -7,7 +7,6 @@ import json
 import requests
 from config import *
 
-
 class Posture_Check_Model(BehaviorModelExecutor):
     input_save = ''
     def __init__(self, instance_time, destruct_time, name, engine_name):
