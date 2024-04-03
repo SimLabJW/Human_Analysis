@@ -33,7 +33,9 @@ class Pose1Manager():
         self.health_model.coupling_relation(Result_m, "pose_select", Check_m, "start")
         self.health_model.coupling_relation(Check_m, "pose_out", Classify_m, "start")
         self.health_model.coupling_relation(Classify_m, "pose_next_s", Check_m, "next")
+        # 성공시에 대한 결과 반환 부분 생성 필요
         self.health_model.coupling_relation(Classify_m, "pose_next_f", Check_m, "-ing")
+        # 실패시에 대한 결과 반환 부분 생성 필요 : 무슨 데이터 전달할건지 생각한다음 만들면될듯
         self.health_model.coupling_relation(Classify_m, "pose_done", Result_m, "stop")
 
         self.start()
