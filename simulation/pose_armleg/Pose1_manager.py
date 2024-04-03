@@ -19,7 +19,7 @@ class Pose1Manager():
         self.health_model.insert_input_port("next")
         self.health_model.insert_input_port("stop")
         
-        print("start engine")
+        print("start engine_arm_leg")
         Check_m = Posture_Check_Model(0, Infinite, "Check_m", "CARE")
         Classify_m = Posture_Classify_Model(0, Infinite, "Classify_m", "CARE")
         Result_m = Return_result_Model(0, Infinite, "Result_m", "CARE")

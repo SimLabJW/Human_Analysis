@@ -49,15 +49,13 @@ class Posture_Check_Model(BehaviorModelExecutor):
     def output(self): 
          #webcam code
         if self._cur_state == "Generate":
-            
-
             response = requests.get(URL, params={'key': 'value'})
             if response.status_code == 200:
                 received_data = response.json()
                 self.input_save = received_data['input_data']
 
             else:
-                self._cur_state = "Generate"
+                self._cur_state = "Wait"
             
 
             if self.input_save:
@@ -79,7 +77,10 @@ class Posture_Check_Model(BehaviorModelExecutor):
             msg.insert([self.count, [elbow, shoulder, knee]])
             
             return msg
-            
+        
+        if self._cur_state == "Wait":
+            if requests.get(URL, params={'key': 'value'}):
+                self._cur_state="Generate"
             
     def int_trans(self):
         if self._cur_state == "angle_trans":

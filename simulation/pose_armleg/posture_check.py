@@ -5,7 +5,7 @@ import matplotlib as plt
 import mediapipe as mp
 import json
 import requests
-from simulation.config import *
+from config import *
 
 
 class Posture_Check_Model(BehaviorModelExecutor):
@@ -58,7 +58,7 @@ class Posture_Check_Model(BehaviorModelExecutor):
                 self.input_save = received_data['input_data']
 
             else:
-                self._cur_state = "Generate"
+                self._cur_state = "Wait"
             
 
             if self.input_save:
@@ -81,6 +81,9 @@ class Posture_Check_Model(BehaviorModelExecutor):
             
             return msg
             
+        if self._cur_state == "Wait":
+            if requests.get(URL, params={'key': 'value'}):
+                self._cur_state="Generate"
             
     def int_trans(self):
         if self._cur_state == "angle_trans":
