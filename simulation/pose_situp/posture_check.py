@@ -6,6 +6,7 @@ import mediapipe as mp
 import json
 import requests
 from config import *
+# import time
 
 class Posture_Check_Model(BehaviorModelExecutor):
     input_save = ''
@@ -78,9 +79,6 @@ class Posture_Check_Model(BehaviorModelExecutor):
             
             return msg
         
-        if self._cur_state == "Wait":
-            if requests.get(URL, params={'key': 'value'}):
-                self._cur_state="Generate"
             
     def int_trans(self):
         if self._cur_state == "angle_trans":
@@ -90,7 +88,20 @@ class Posture_Check_Model(BehaviorModelExecutor):
         elif self._cur_state == "Generate":
             self._cur_state = "Generate"
             
-            
+    # def request_data(self): # 기존 데이터를 받아오는 방식
+    #     while True:
+    #         try:
+    #             response = requests.get(URL, params={'key': 'value'})
+    #             response.raise_for_status()  # HTTP 상태코드가 200~299 사이가 아니면 예외 발생
+    #             if requests.get(URL, params={'key': 'value'}):
+    #                 self._cur_state="Generate"
+    #                 return requests.get(URL, params={'key': 'value'})
+                
+    #         except requests.exceptions.RequestException as e:
+    #             print("Request failed:", e)
+    #             print("Retrying in 5 seconds...")
+    #             time.sleep(5) 
+
     def pose_classify(self,landmarks):
         
         # 각도의 여러가지 방향성 고려가 필요. 머리부터 발끝까지 이룰 수 있는 모든 각도들이 더 존재함.
