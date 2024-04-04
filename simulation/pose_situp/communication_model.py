@@ -15,7 +15,7 @@ class Return_result_Model(BehaviorModelExecutor):
         self.insert_state("data-ing",1)
         self.insert_state("pose_in",1)
 
-        self.insert_input_port("-ing")
+        self.insert_input_port("next")
         self.insert_input_port("stop")
         self.insert_input_port("start")
 
@@ -30,7 +30,7 @@ class Return_result_Model(BehaviorModelExecutor):
             print("It checks that the data is not empty and while data is being added for the action.")
             self._cur_state = "Generate"
 
-        if port == "-ing":
+        if port == "next":
             self.result = msg.retrieve()
             self.send_data(self.result_dic)
         
@@ -71,10 +71,10 @@ class Return_result_Model(BehaviorModelExecutor):
 
         if self._cur_state == "Generate":
             self.rec_data = self.receive_data()
-            if self.rec_data == "sit_up":
+            if self.rec_data == "arm_leg":
                 self._cur_state = "pose_in"
             else:
-                print("run----sit_up")
+                print("run----arm_leg")
             
         if self._cur_state == "pose_in":
             msg = SysMessage(self.get_name(), "pose_select")
