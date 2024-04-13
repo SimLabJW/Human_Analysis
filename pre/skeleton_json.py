@@ -17,12 +17,15 @@ class Skeleton_Display():
             all_landmarks = json.load(json_file)
 
         # 윈도우 생성
-        cv2.namedWindow("Skeleton Display", cv2.WINDOW_NORMAL)
-        cv2.resizeWindow("Skeleton Display", 640, 480)
+        # cv2.namedWindow("Skeleton Display", cv2.WINDOW_NORMAL)
+        # cv2.resizeWindow("Skeleton Display", 640, 480)
+
+        
 
         for frame_data in all_landmarks:
+      
             # 빈 이미지/프레임 생성
-            image = np.zeros((480, 640, 3), dtype=np.uint8)
+            # image = np.zeros((480, 640, 3), dtype=np.uint8)
 
             # 랜드마크 데이터를 이미지에 그리기
             landmarks = frame_data['landmarks']
@@ -33,17 +36,17 @@ class Skeleton_Display():
                 new_landmark.y = landmark['y']
                 new_landmark.z = landmark['z']
                 new_landmark.visibility = landmark.get('visibility', 0)
+            print(pose_landmarks)
+        #     # 스켈레톤 그리기
+            # self.mp_drawing.draw_landmarks(image, pose_landmarks, self.pose_connections)
 
-            # 스켈레톤 그리기
-            self.mp_drawing.draw_landmarks(image, pose_landmarks, self.pose_connections)
+        #     # 생성된 이미지를 윈도우에 출력
+        #     cv2.imshow("Skeleton Display", image)
+        #     if cv2.waitKey(int(1000/30)) & 0xFF == 27:  # ESC 키를 누르면 종료
+        #         break
 
-            # 생성된 이미지를 윈도우에 출력
-            cv2.imshow("Skeleton Display", image)
-            if cv2.waitKey(int(1000/30)) & 0xFF == 27:  # ESC 키를 누르면 종료
-                break
-
-        # 자원 해제
-        cv2.destroyAllWindows()
+        # # 자원 해제
+        # cv2.destroyAllWindows()
 
 # 객체 생성 및 실행
 skeleton_display = Skeleton_Display('arm_leg_video.json')
