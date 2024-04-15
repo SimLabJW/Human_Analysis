@@ -86,6 +86,8 @@ class Posture_Check_Model(BehaviorModelExecutor):
             
 
     def pose_classify(self,landmarks):
+
+        NECK = self.shoulder_point(landmarks[self.mp_pose.PoseLandmark.LEFT_SHOULDER.value],landmarks[self.mp_pose.PoseLandmark.RIGHT_SHOULDER.value])
         
         ################# - - 팔꿈치 - - ###################
         #왼쪽 팔꿈치
@@ -111,12 +113,12 @@ class Posture_Check_Model(BehaviorModelExecutor):
         ################# - - 목 - - #####################(데이터 형태 확인 후 머리 위치와 어깨 간 중간 점 만들어서 진행해야함)
         # 왼쪽 목
         left_neck_angle, l_neck_one_xy, l_neck_two_xy, l_neck_three_xy = self.calculateAngle(landmarks[self.mp_pose.PoseLandmark.LEFT_SHOULDER.value],
-                                            landmarks[self.mp_pose.PoseLandmark.neckpoint.value],
-                                            landmarks[self.mp_pose.PoseLandmark.headpoint.value])
+                                            NECK,
+                                            landmarks[self.mp_pose.PoseLandmark.NOSE.value])
         # 오른쪽 목
         right_neck_angle, r_neck_one_xy, r_neck_two_xy, r_neck_three_xy = self.calculateAngle(landmarks[self.mp_pose.PoseLandmark.RIGHT_SHOULDER.value],
-                                            landmarks[self.mp_pose.PoseLandmark.neckpoint.value],
-                                            landmarks[self.mp_pose.PoseLandmark.headpoint.value])
+                                            NECK,
+                                            landmarks[self.mp_pose.PoseLandmark.NOSE.value])
         ####################################################
         ################# - - 엉덩이(또는 허리) - - #####################(데이터 형태 확인 후 머리 위치와 어깨 간 중간 점 만들어서 진행해야함)
         # 왼쪽 목
@@ -168,3 +170,13 @@ class Posture_Check_Model(BehaviorModelExecutor):
         # Return the calculated angle.
         return angle, [x1, y1, _], [x2, y2, _], [x3, y3, _]
     
+    def shoulder_point(self, landmark_l_shoulder, landmark_r_shoulder):
+
+        l_shoulder_x, l_shoulder_y, _  = landmark_l_shoulder
+        r_shoulder_x, r_shoulder_y, _ = landmark_r_shoulder
+        
+        # 어깨 중앙 지점의 좌표를 계산합니다.
+        shoulder_center_x = (l_shoulder_x + r_shoulder_x) / 2
+        shoulder_center_y = (l_shoulder_y + r_shoulder_y) / 2
+
+        return shoulder_center_x,shoulder_center_y,0
