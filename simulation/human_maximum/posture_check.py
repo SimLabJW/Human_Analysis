@@ -14,15 +14,11 @@ class Posture_Check_Model(BehaviorModelExecutor):
         BehaviorModelExecutor.__init__(self, instance_time, destruct_time, name, engine_name)
         
         self.init_state("Wait")
-
         self.insert_state("Wait", Infinite)
-        self.insert_state("Generate",1)
-
-        self.insert_state("angle_trans")
+        self.insert_state("Generate",0)
 
         self.insert_input_port("start")
-        self.insert_input_port("next")
-        self.insert_input_port("-ing")
+
 
         self.insert_output_port("pose_out")
 
@@ -66,7 +62,7 @@ class Posture_Check_Model(BehaviorModelExecutor):
                     
                     self.landmarks.append((int(self.input_save[landmark]['X']*640), int(self.input_save[landmark]['Y']*320), (self.input_save[landmark]['Z']*640))) #데이터 받기전 넓이, 높이 곱하기 필요.
 
-                elbow,shoulder,knee = self.pose_classify(self.landmarks)
+                elbow,shoulder,neck,hip,knee = self.pose_classify(self.landmarks)
                 print(f"elbow {elbow}\nshoulder {shoulder}\nknee {knee}")
                 
                 self._cur_state = "angle_trans"  
@@ -77,7 +73,7 @@ class Posture_Check_Model(BehaviorModelExecutor):
      
         if self._cur_state == "angle_trans":
             msg = SysMessage(self.get_name(), "pose_out")
-            msg.insert([self.count, [elbow, shoulder, knee]])
+            msg.insert([elbow, shoulder, neck, hip,knee])
             
             return msg
             
@@ -90,65 +86,64 @@ class Posture_Check_Model(BehaviorModelExecutor):
         elif self._cur_state == "Generate":
             self._cur_state = "Generate"
             
-    # def request_data(self): # 기존 데이터를 받아오는 방식
-    #     while True:
-    #         try:
-    #             response = requests.get(URL, params={'key': 'value'})
-    #             response.raise_for_status()  # HTTP 상태코드가 200~299 사이가 아니면 예외 발생
-    #             if requests.get(URL, params={'key': 'value'}):
-    #                 self._cur_state="Generate"
-    #                 return requests.get(URL, params={'key': 'value'})
-                
-    #         except requests.exceptions.RequestException as e:
-    #             print("Request failed:", e)
-    #             print("Retrying in 5 seconds...")
-    #             time.sleep(5) 
 
     def pose_classify(self,landmarks):
         
-        # 각도의 여러가지 방향성 고려가 필요. 머리부터 발끝까지 이룰 수 있는 모든 각도들이 더 존재함.
-
-        # 11번, 13번, 15번 landmark 
-        # 왼쪽 어깨, 왼쪽 팔꿈치, 왼쪽 손목 landmark angle 값 계산 
+        ################# - - 팔꿈치 - - ###################
+        #왼쪽 팔꿈치
         left_elbow_angle = self.calculateAngle(landmarks[self.mp_pose.PoseLandmark.LEFT_SHOULDER.value],
                                         landmarks[self.mp_pose.PoseLandmark.LEFT_ELBOW.value],
                                         landmarks[self.mp_pose.PoseLandmark.LEFT_WRIST.value])
         
-        
-        # 12번, 14번, 16번 landmark 
-        # 오른쪽 어깨, 오른쪽 팔꿈치, 오른쪽 손목 landmark angle 값 계산 
+        #오른쪽 팔꿈치
         right_elbow_angle = self.calculateAngle(landmarks[self.mp_pose.PoseLandmark.RIGHT_SHOULDER.value],
                                         landmarks[self.mp_pose.PoseLandmark.RIGHT_ELBOW.value],
                                         landmarks[self.mp_pose.PoseLandmark.RIGHT_WRIST.value]) 
-        
-        
-        # 13번, 15번, 23번 landmark 
-        # 왼쪽 팔꿈치, 왼쪽 어깨, 왼쪽 엉덩이, landmark angle 값 계산 
+        ###################################################
+        ################# - - 어깨 - - #####################
+        # 왼쪽 어깨
         left_shoulder_angle = self.calculateAngle(landmarks[self.mp_pose.PoseLandmark.LEFT_ELBOW.value],
                                             landmarks[self.mp_pose.PoseLandmark.LEFT_SHOULDER.value],
                                             landmarks[self.mp_pose.PoseLandmark.LEFT_HIP.value])
-        # print(f'left shoulder engle : {left_shoulder_angle}')
-        # 12번, 14번, 24번 landmark 
-        # 오른쪽 팔꿈치, 오른쪽 어깨, 오른쪽 엉덩이 landmark angle 값 계산  
+        # 오른쪽 어깨
         right_shoulder_angle = self.calculateAngle(landmarks[self.mp_pose.PoseLandmark.RIGHT_HIP.value],
                                             landmarks[self.mp_pose.PoseLandmark.RIGHT_SHOULDER.value],
                                             landmarks[self.mp_pose.PoseLandmark.RIGHT_ELBOW.value])
-        # print(f'right shoulder engle : {right_shoulder_angle}')
-        # 23번, 25번, 27번 landmark 
+        ####################################################
+        ################# - - 목 - - #####################(데이터 형태 확인 후 머리 위치와 어깨 간 중간 점 만들어서 진행해야함)
+        # 왼쪽 목
+        left_neck_angle = self.calculateAngle(landmarks[self.mp_pose.PoseLandmark.LEFT_SHOULDER.value],
+                                            landmarks[self.mp_pose.PoseLandmark.neckpoint.value],
+                                            landmarks[self.mp_pose.PoseLandmark.headpoint.value])
+        # 오른쪽 목
+        right_neck_angle = self.calculateAngle(landmarks[self.mp_pose.PoseLandmark.RIGHT_SHOULDER.value],
+                                            landmarks[self.mp_pose.PoseLandmark.neckpoint.value],
+                                            landmarks[self.mp_pose.PoseLandmark.headpoint.value])
+        ####################################################
+        ################# - - 엉덩이(또는 허리) - - #####################(데이터 형태 확인 후 머리 위치와 어깨 간 중간 점 만들어서 진행해야함)
+        # 왼쪽 목
+        left_hip_angle = self.calculateAngle(landmarks[self.mp_pose.PoseLandmark.LEFT_SHOULDER.value],
+                                            landmarks[self.mp_pose.PoseLandmark.LEFT_HIP.value],
+                                            landmarks[self.mp_pose.PoseLandmark.LEFT_KNEE.value])
+        # 오른쪽 목
+        right_hip_angle = self.calculateAngle(landmarks[self.mp_pose.PoseLandmark.RIGHT_SHOULDER.value],
+                                            landmarks[self.mp_pose.PoseLandmark.RIGHT_HIP.value],
+                                            landmarks[self.mp_pose.PoseLandmark.RIGHT_KNEE.value])
+        ####################################################
+        ################# - - 왼쪽 무릎 - - ##################
         # 왼쪽 엉덩이, 왼쪽 무릎, 왼쪽 발목 landmark angle 값 계산 
         left_knee_angle = self.calculateAngle(landmarks[self.mp_pose.PoseLandmark.LEFT_HIP.value],
                                         landmarks[self.mp_pose.PoseLandmark.LEFT_KNEE.value],
                                         landmarks[self.mp_pose.PoseLandmark.LEFT_ANKLE.value])
 
-        # 24번, 26번, 28번 landmark 
-        # 오른쪽 엉덩이, 오른쪽 무릎, 오른쪽 발목  landmark angle 값 계산 
+        # 오른쪽 무릎
         right_knee_angle = self.calculateAngle(landmarks[self.mp_pose.PoseLandmark.RIGHT_HIP.value],
                                         landmarks[self.mp_pose.PoseLandmark.RIGHT_KNEE.value],
                                         landmarks[self.mp_pose.PoseLandmark.RIGHT_ANKLE.value])
-        
+        #####################################################
         self.landmarks = []
         
-        return [left_elbow_angle, right_elbow_angle],[left_shoulder_angle, right_shoulder_angle],[left_knee_angle, right_knee_angle]
+        return [left_elbow_angle, right_elbow_angle],[left_shoulder_angle, right_shoulder_angle],[left_neck_angle, right_neck_angle],[left_hip_angle, right_hip_angle],[left_knee_angle, right_knee_angle]
 
      # 앵글 계산 함수
     def calculateAngle(self, landmark1, landmark2, landmark3):

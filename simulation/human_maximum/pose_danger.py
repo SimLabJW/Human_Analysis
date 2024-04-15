@@ -1,7 +1,7 @@
 from pyevsim import BehaviorModelExecutor, Infinite, SysMessage
 # from config import *
 
-class Posture_Classify_Model(BehaviorModelExecutor):
+class Pose_Danger_Model(BehaviorModelExecutor):
     def __init__(self, instance_time, destruct_time, name, engine_name):
         BehaviorModelExecutor.__init__(self, instance_time, destruct_time, name, engine_name)
         
@@ -9,24 +9,8 @@ class Posture_Classify_Model(BehaviorModelExecutor):
 
         self.insert_state("Wait", Infinite)
         self.insert_state("Generate",1)
-        
-        self.insert_state("Next_s",1)
-        self.insert_state("Next_f",1)
-        self.insert_state("Stop",1)
 
         self.insert_input_port("start")
-        self.insert_input_port("-ing")
-        self.insert_input_port("Done")
-
-        self.insert_output_port("pose_next_s")
-        self.insert_output_port("pose_next_f")
-        self.insert_output_port("pose_done")
-       
-        # 기존 정보들에 대한 정보
-
-        # self.default_pose = "arm_leg_.png"
-        self.default_count = 0
-        self.default_angle = []
 
         self.pose_determine()
         # 입력 값에 대한 정보 수정
@@ -38,8 +22,7 @@ class Posture_Classify_Model(BehaviorModelExecutor):
         if port == "start":
             # 동작 기준 정보 불러오기
             self.landmarks_frame = msg.retrieve()
-            self.count = self.landmarks_frame[0][0]
-            self.landmarks_frame = self.landmarks_frame[0][1]
+            self.landmarks_frame = self.landmarks_frame[0]
   
             self._cur_state = "Generate"
 
@@ -47,35 +30,36 @@ class Posture_Classify_Model(BehaviorModelExecutor):
     def output(self): 
 
         if self._cur_state == "Generate":
+            pass
             # 조건 자동삽입
-            if self.count  < self.default_count:
-                result = self.contrast_angle(self.landmarks_frame,\
-                                            self.default_angle[self.count][1],15)
-                if result:
-                    print("주어진 데이터는 기준 데이터의 범위 안에 있습니다.")
-                    self._cur_state = "Next_s" 
-                else:
-                    # print("주어진 데이터는 기준 데이터의 범위를 벗어납니다.")
-                    self._cur_state = "Next_f" 
+        #     if self.count  < self.default_count:
+        #         result = self.contrast_angle(self.landmarks_frame,\
+        #                                     self.default_angle[self.count][1],15)
+        #         if result:
+        #             print("주어진 데이터는 기준 데이터의 범위 안에 있습니다.")
+        #             self._cur_state = "Next_s" 
+        #         else:
+        #             # print("주어진 데이터는 기준 데이터의 범위를 벗어납니다.")
+        #             self._cur_state = "Next_f" 
 
-            else:
-                print("pose simulation Done")
-                self._cur_state = "Stop"  
+        #     else:
+        #         print("pose simulation Done")
+        #         self._cur_state = "Stop"  
             
-        elif self._cur_state == "Next_s":
-            msg = SysMessage(self.get_name(), "pose_next_s")
-            msg.insert(["Succes", self.count+1])
-            return msg
+        # elif self._cur_state == "Next_s":
+        #     msg = SysMessage(self.get_name(), "pose_next_s")
+        #     msg.insert(["Succes", self.count+1])
+        #     return msg
         
-        elif self._cur_state == "Next_f":
-            msg = SysMessage(self.get_name(), "pose_next_f")
-            msg.insert(["Fail", self.count])
-            return msg
+        # elif self._cur_state == "Next_f":
+        #     msg = SysMessage(self.get_name(), "pose_next_f")
+        #     msg.insert(["Fail", self.count])
+        #     return msg
         
-        elif self._cur_state == "Stop":
-            msg = SysMessage(self.get_name(), "pose_done")
-            msg.insert("Fail or Succes")
-            return msg
+        # elif self._cur_state == "Stop":
+        #     msg = SysMessage(self.get_name(), "pose_done")
+        #     msg.insert("Fail or Succes")
+        #     return msg
             
     def int_trans(self):
         if self._cur_state == "Generate":
