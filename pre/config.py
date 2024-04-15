@@ -1,4 +1,4 @@
-IMAGE_FILES = "./Pose_zip"
+IMAGE_FILES = "C:/Users/USER/Desktop/Code/Python_c/Human_Analysis/Pose_zip"
 IMAGE_JSON = "reading_image.json"
 ANGLE_JSON = "pose_angle.json"
 RESULT_JSON = "result_pose.json"

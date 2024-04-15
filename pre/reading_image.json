@@ -12,9 +12,13 @@
       [
         "arm_leg_3.png",
         3
+      ],
+      [
+        "arm_leg_4.png",
+        4
       ]
     ],
-    "count": 3
+    "count": 4
   },
   "push_up.jpg": {
     "files": [
