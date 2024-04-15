@@ -23,7 +23,7 @@ class Pose_Danger_Model(BehaviorModelExecutor):
             self.faillist = []
             # 동작 기준 정보 불러오기
             self.landmarks_frame = msg.retrieve()[0]
-
+            
             self.elbow_angle = self.landmarks_frame[0]
             self.shoulder_angle = self.landmarks_frame[1]
             self.neck_angle = self.landmarks_frame[2]
@@ -36,28 +36,18 @@ class Pose_Danger_Model(BehaviorModelExecutor):
     def output(self): 
 
         if self._cur_state == "Generate":
-            l_elbow = self.elbow_setangle[0][0]< self.elbow_angle[0] <self.elbow_setangle[1][0]
-            l_shoulder = self.shoulder_setangle[0][0]< self.shoulder_angle[0] <self.shoulder_setangle[1][0]
-            l_neck = self.neck_setangle[0][0]< self.neck_angle[0] <self.neck_setangle[1][0]
-            l_hip = self.hip_setangle[0][0]< self.hip_angle[0] <self.hip_setangle[1][0]
-            l_knee = self.knee_setangle[0][0]< self.knee_angle[0] <self.knee_setangle[1][0]
-    
-            r_elbow = self.elbow_setangle[0][1]< self.elbow_angle[1] <self.elbow_setangle[1][1]
-            r_shoulder = self.shoulder_setangle[0][1]< self.shoulder_angle[1] <self.shoulder_setangle[1][1]
-            r_neck = self.neck_setangle[0][1]< self.neck_angle[1] <self.neck_setangle[1][1]
-            r_hip = self.hip_setangle[0][1]< self.hip_angle[1] <self.hip_setangle[1][1]
-            r_knee = self.knee_setangle[0][1]< self.knee_angle[1] <self.knee_setangle[1][1]
-            self.anglist.append(["l_elbow",l_elbow], ["l_shoulder",l_shoulder], ["l_neck",l_neck],["l_hip",l_hip], ["l_knee",l_knee],\
-                                ["r_elbow",r_elbow], ["r_shoulder",r_shoulder], ["r_neck",r_neck], ["r_hip",r_hip], ["r_knee",r_knee])
+
+            self.anglist = self.check_angle()
             
             for sf in self.anglist:
                 if not  sf[1]: 
-                    self.faillist.append(sf)
+                    self.faillist.append([sf[1],sf[2]])
 
             if len(self.faillist) > 0:
                 self._cur_state = "GET_F"
 
         if self._cur_state == "GET_F":
+            print(self.faillist)
             pass
             #요기서 데이터 전달하는 코드 작성하면 될듯
             # 문제가 나는 부분에 해당하는 이름만 지금 전달하는중임, 값은 추가 코드 작성필요.
@@ -91,20 +81,30 @@ class Pose_Danger_Model(BehaviorModelExecutor):
         # self.default_angle.append(armleg_angle)
 
   
-    # def contrast_angle(self, input_data, default_data,threshold):
+    def check_angle(self):
+        anglist_all = []
 
-    #     individual_avgs = [[sum(item) / len(item) for item in sublist] for sublist in [input_data, default_data]]
-    #     for i in range(len(individual_avgs)):
+        l_elbow = self.elbow_setangle[0][0]< self.elbow_angle[0][0][0] <self.elbow_setangle[1][0]
+        l_shoulder = self.shoulder_setangle[0][0]< self.shoulder_angle[0][0][0] <self.shoulder_setangle[1][0]
+        l_neck = self.neck_setangle[0][0]< self.neck_angle[0][0][0] <self.neck_setangle[1][0]
+        l_hip = self.hip_setangle[0][0]< self.hip_angle[0][0][0] <self.hip_setangle[1][0]
+        l_knee = self.knee_setangle[0][0]< self.knee_angle[0][0][0] <self.knee_setangle[1][0]
 
-    #         lower_limit = individual_avgs[1][i] - threshold
-    #         upper_limit = individual_avgs[1][i] + threshold
-            
-    #         if lower_limit < 0:
-    #             lower_limit = 0
-
-    #         if not (lower_limit <= individual_avgs[0][i] <= upper_limit):
-    #             return False
-
-    #     return True
+        r_elbow = self.elbow_setangle[0][1]< self.elbow_angle[1][1][0] <self.elbow_setangle[1][1]
+        r_shoulder = self.shoulder_setangle[0][1]< self.shoulder_angle[1][1][0] <self.shoulder_setangle[1][1]
+        r_neck = self.neck_setangle[0][1]< self.neck_angle[1][1][0] <self.neck_setangle[1][1]
+        r_hip = self.hip_setangle[0][1]< self.hip_angle[1][1][0] <self.hip_setangle[1][1]
+        r_knee = self.knee_setangle[0][1]< self.knee_angle[1][1][0] <self.knee_setangle[1][1]
+        anglist_all.append(["l_elbow",l_elbow,self.elbow_angle[0][0][1]], \
+                           ["l_shoulder",l_shoulder,self.shoulder_angle[0][0][1]], \
+                            ["l_neck",l_neck,self.neck_angle[0][0][1]],\
+                                ["l_hip",l_hip,self.hip_angle[0][0][1]], \
+                                    ["l_knee",l_knee,self.knee_angle[0][0][1]],\
+                                        ["r_elbow",r_elbow,self.elbow_angle[1][1][1]], \
+                                            ["r_shoulder",r_shoulder,self.shoulder_angle[1][1][1]], \
+                                                ["r_neck",r_neck,self.neck_angle[1][1][1]], \
+                                                    ["r_hip",r_hip,self.hip_angle[1][1][1]], \
+                                                        ["r_knee",r_knee,self.knee_angle[1][1][1]])
+        return anglist_all
 
         

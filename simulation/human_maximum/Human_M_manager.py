@@ -1,7 +1,6 @@
 from pyevsim import BehaviorModelExecutor, SystemSimulator, Infinite
 from posture_check import Posture_Check_Model
-from simulation.human_maximum.pose_danger import Pose_Danger_Model
-from communication_model import Return_result_Model
+from pose_danger import Pose_Danger_Model
 
 class DangerManager():
     def __init__(self) -> None:
@@ -10,7 +9,7 @@ class DangerManager():
 
         self.ds.register_engine("DANGER", "VIRTUAL_TIME", 0.1)
 
-        self.danger_model = self.ss.get_engine("DANGER")
+        self.danger_model = self.ds.get_engine("DANGER")
 
         self.danger_model.insert_input_port("start")
         

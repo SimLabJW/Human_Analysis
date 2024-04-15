@@ -5,8 +5,6 @@ import matplotlib as plt
 import mediapipe as mp
 import json
 import requests
-from config import *
-# import time
 
 class Posture_Check_Model(BehaviorModelExecutor):
     input_save = ''
@@ -60,13 +58,13 @@ class Posture_Check_Model(BehaviorModelExecutor):
             if self.input_save:
                 for landmark in range(len(self.input_save)):
                     
-                    self.landmarks.append((int(self.input_save[landmark]['X']*640), int(self.input_save[landmark]['Y']*320), (self.input_save[landmark]['Z']*640))) #데이터 받기전 넓이, 높이 곱하기 필요.
+                    self.landmarks.append((int(self.input_save[landmark]['X']*640), \
+                                           int(self.input_save[landmark]['Y']*320), \
+                                            (self.input_save[landmark]['Z']*640))) 
 
                 elbow,shoulder,neck,hip,knee = self.pose_classify(self.landmarks)
-                print(f"elbow {elbow}\nshoulder {shoulder}\nknee {knee}")
-                
+        
                 self._cur_state = "angle_trans"  
-
             else:
                 self._cur_state = "Generate"
             
@@ -91,59 +89,63 @@ class Posture_Check_Model(BehaviorModelExecutor):
         
         ################# - - 팔꿈치 - - ###################
         #왼쪽 팔꿈치
-        left_elbow_angle = self.calculateAngle(landmarks[self.mp_pose.PoseLandmark.LEFT_SHOULDER.value],
+        left_elbow_angle, l_elbow_one_xy, l_elbow_two_xy, l_elbow_three_xy  = self.calculateAngle(landmarks[self.mp_pose.PoseLandmark.LEFT_SHOULDER.value],
                                         landmarks[self.mp_pose.PoseLandmark.LEFT_ELBOW.value],
                                         landmarks[self.mp_pose.PoseLandmark.LEFT_WRIST.value])
         
         #오른쪽 팔꿈치
-        right_elbow_angle = self.calculateAngle(landmarks[self.mp_pose.PoseLandmark.RIGHT_SHOULDER.value],
+        right_elbow_angle, r_elbow_one_xy, r_elbow_two_xy, r_elbow_three_xy = self.calculateAngle(landmarks[self.mp_pose.PoseLandmark.RIGHT_SHOULDER.value],
                                         landmarks[self.mp_pose.PoseLandmark.RIGHT_ELBOW.value],
                                         landmarks[self.mp_pose.PoseLandmark.RIGHT_WRIST.value]) 
         ###################################################
         ################# - - 어깨 - - #####################
         # 왼쪽 어깨
-        left_shoulder_angle = self.calculateAngle(landmarks[self.mp_pose.PoseLandmark.LEFT_ELBOW.value],
+        left_shoulder_angle, l_shoulder_one_xy, l_shoulder_two_xy, l_shoulder_three_xy = self.calculateAngle(landmarks[self.mp_pose.PoseLandmark.LEFT_ELBOW.value],
                                             landmarks[self.mp_pose.PoseLandmark.LEFT_SHOULDER.value],
                                             landmarks[self.mp_pose.PoseLandmark.LEFT_HIP.value])
         # 오른쪽 어깨
-        right_shoulder_angle = self.calculateAngle(landmarks[self.mp_pose.PoseLandmark.RIGHT_HIP.value],
+        right_shoulder_angle, r_shoulder_one_xy, r_shoulder_two_xy, r_shoulder_three_xy = self.calculateAngle(landmarks[self.mp_pose.PoseLandmark.RIGHT_HIP.value],
                                             landmarks[self.mp_pose.PoseLandmark.RIGHT_SHOULDER.value],
                                             landmarks[self.mp_pose.PoseLandmark.RIGHT_ELBOW.value])
         ####################################################
         ################# - - 목 - - #####################(데이터 형태 확인 후 머리 위치와 어깨 간 중간 점 만들어서 진행해야함)
         # 왼쪽 목
-        left_neck_angle = self.calculateAngle(landmarks[self.mp_pose.PoseLandmark.LEFT_SHOULDER.value],
+        left_neck_angle, l_neck_one_xy, l_neck_two_xy, l_neck_three_xy = self.calculateAngle(landmarks[self.mp_pose.PoseLandmark.LEFT_SHOULDER.value],
                                             landmarks[self.mp_pose.PoseLandmark.neckpoint.value],
                                             landmarks[self.mp_pose.PoseLandmark.headpoint.value])
         # 오른쪽 목
-        right_neck_angle = self.calculateAngle(landmarks[self.mp_pose.PoseLandmark.RIGHT_SHOULDER.value],
+        right_neck_angle, r_neck_one_xy, r_neck_two_xy, r_neck_three_xy = self.calculateAngle(landmarks[self.mp_pose.PoseLandmark.RIGHT_SHOULDER.value],
                                             landmarks[self.mp_pose.PoseLandmark.neckpoint.value],
                                             landmarks[self.mp_pose.PoseLandmark.headpoint.value])
         ####################################################
         ################# - - 엉덩이(또는 허리) - - #####################(데이터 형태 확인 후 머리 위치와 어깨 간 중간 점 만들어서 진행해야함)
         # 왼쪽 목
-        left_hip_angle = self.calculateAngle(landmarks[self.mp_pose.PoseLandmark.LEFT_SHOULDER.value],
+        left_hip_angle, l_hip_one_xy, l_hip_two_xy, l_hip_three_xy = self.calculateAngle(landmarks[self.mp_pose.PoseLandmark.LEFT_SHOULDER.value],
                                             landmarks[self.mp_pose.PoseLandmark.LEFT_HIP.value],
                                             landmarks[self.mp_pose.PoseLandmark.LEFT_KNEE.value])
         # 오른쪽 목
-        right_hip_angle = self.calculateAngle(landmarks[self.mp_pose.PoseLandmark.RIGHT_SHOULDER.value],
+        right_hip_angle, r_hip_one_xy, r_hip_two_xy, r_hip_three_xy = self.calculateAngle(landmarks[self.mp_pose.PoseLandmark.RIGHT_SHOULDER.value],
                                             landmarks[self.mp_pose.PoseLandmark.RIGHT_HIP.value],
                                             landmarks[self.mp_pose.PoseLandmark.RIGHT_KNEE.value])
         ####################################################
         ################# - - 왼쪽 무릎 - - ##################
         # 왼쪽 엉덩이, 왼쪽 무릎, 왼쪽 발목 landmark angle 값 계산 
-        left_knee_angle = self.calculateAngle(landmarks[self.mp_pose.PoseLandmark.LEFT_HIP.value],
+        left_knee_angle, l_knee_one_xy, l_knee_two_xy, l_knee_three_xy = self.calculateAngle(landmarks[self.mp_pose.PoseLandmark.LEFT_HIP.value],
                                         landmarks[self.mp_pose.PoseLandmark.LEFT_KNEE.value],
                                         landmarks[self.mp_pose.PoseLandmark.LEFT_ANKLE.value])
 
         # 오른쪽 무릎
-        right_knee_angle = self.calculateAngle(landmarks[self.mp_pose.PoseLandmark.RIGHT_HIP.value],
+        right_knee_angle, r_knee_one_xy, r_knee_two_xy, r_knee_three_xy = self.calculateAngle(landmarks[self.mp_pose.PoseLandmark.RIGHT_HIP.value],
                                         landmarks[self.mp_pose.PoseLandmark.RIGHT_KNEE.value],
                                         landmarks[self.mp_pose.PoseLandmark.RIGHT_ANKLE.value])
         #####################################################
         self.landmarks = []
         
-        return [left_elbow_angle, right_elbow_angle],[left_shoulder_angle, right_shoulder_angle],[left_neck_angle, right_neck_angle],[left_hip_angle, right_hip_angle],[left_knee_angle, right_knee_angle]
+        return [[left_elbow_angle,[l_elbow_one_xy, l_elbow_two_xy, l_elbow_three_xy]], [right_elbow_angle,[r_elbow_one_xy, r_elbow_two_xy, r_elbow_three_xy]]],\
+            [[left_shoulder_angle,[l_shoulder_one_xy, l_shoulder_two_xy, l_shoulder_three_xy]], [right_shoulder_angle,[r_shoulder_one_xy, r_shoulder_two_xy, r_shoulder_three_xy]]],\
+                [[left_neck_angle,[l_neck_one_xy, l_neck_two_xy, l_neck_three_xy]], [right_neck_angle,[r_neck_one_xy, r_neck_two_xy, r_neck_three_xy]]],\
+                    [[left_hip_angle,[l_hip_one_xy, l_hip_two_xy, l_hip_three_xy]], [right_hip_angle,[r_hip_one_xy, r_hip_two_xy, r_hip_three_xy]]],\
+                        [[left_knee_angle,[l_knee_one_xy, l_knee_two_xy, l_knee_three_xy]], [right_knee_angle,[r_knee_one_xy, r_knee_two_xy, r_knee_three_xy]]]
 
      # 앵글 계산 함수
     def calculateAngle(self, landmark1, landmark2, landmark3):
@@ -164,5 +166,5 @@ class Posture_Check_Model(BehaviorModelExecutor):
             angle += 360
         
         # Return the calculated angle.
-        return angle
+        return angle, [x1, y1, _], [x2, y2, _], [x3, y3, _]
     
