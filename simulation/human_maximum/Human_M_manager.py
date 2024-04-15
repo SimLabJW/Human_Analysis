@@ -3,38 +3,36 @@ from posture_check import Posture_Check_Model
 from simulation.human_maximum.pose_danger import Pose_Danger_Model
 from communication_model import Return_result_Model
 
-class Pose1Manager():
+class DangerManager():
     def __init__(self) -> None:
         # print(data)
-        self.ss = SystemSimulator()
+        self.ds = SystemSimulator()
 
-        self.ss.register_engine("CARE", "VIRTUAL_TIME", 0.1)
+        self.ds.register_engine("DANGER", "VIRTUAL_TIME", 0.1)
 
-        self.health_model = self.ss.get_engine("CARE")
+        self.danger_model = self.ss.get_engine("DANGER")
 
-        self.health_model.insert_input_port("start")
+        self.danger_model.insert_input_port("start")
         
         print("start engine_arm_leg")
-        Check_m = Posture_Check_Model(0, Infinite, "Check_m", "CARE")
-        Classify_m = Pose_Danger_Model(0, Infinite, "Classify_m", "CARE")
-        Result_m = Return_result_Model(0, Infinite, "Result_m", "CARE")
+        Check_m = Posture_Check_Model(0, Infinite, "Check_m", "DANGER")
+        Danger_m = Pose_Danger_Model(0, Infinite, "Classify_m", "DANGER")
+     
 
-        self.health_model.register_entity(Check_m)
-        self.health_model.register_entity(Classify_m)
-        self.health_model.register_entity(Result_m)
+        self.danger_model.register_entity(Check_m)
+        self.danger_model.register_entity(Danger_m)
 
-        # 이미지 데이터 수신 및 기존 조건과의 비교 및 결과 판독
-        self.health_model.coupling_relation(None, "start", Result_m, "start")
-        self.health_model.coupling_relation(Result_m, "pose_select", Check_m, "start")
-        self.health_model.coupling_relation(Check_m, "pose_out", Classify_m, "start")
+
+        self.danger_model.coupling_relation(None, "start", Check_m, "start")
+        self.danger_model.coupling_relation(Check_m, "pose_out", Danger_m, "start")
 
         self.start()
 
 
     def start(self) -> None:
         # pass
-        self.health_model.insert_external_event("start","start")
-        self.health_model.simulate()
+        self.danger_model.insert_external_event("start","start")
+        self.danger_model.simulate()
 
 if __name__ == '__main__':
-    test_manager = Pose1Manager()
+    test_manager = DangerManager()
